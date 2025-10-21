@@ -1,1 +1,0 @@
--keep,allowobfuscation,allowshrinking class com.samsung.health.mobile.presentation.MainViewModel
