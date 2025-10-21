@@ -1,9 +1,12 @@
 package com.samsung.health.mobile.presentation.ui
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -11,16 +14,29 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.samsung.health.mobile.data.LiveWatchData
+import androidx.compose.ui.unit.sp
 import com.samsung.health.mobile.presentation.RecordingState
-import com.samsung.health.mobile.presentation.ReminderState
 import com.samsung.health.mobile.presentation.StageState
+import com.samsung.health.mobile.presentation.ReminderState
+import com.samsung.health.mobile.data.LiveWatchData
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Dark theme colors
+private val DarkBackground = Color(0xFF0F0F0F)
+private val CardBackground = Color(0xFF1C1C1E)
+private val PurpleStart = Color(0xFF6B4CE6)
+private val PurpleEnd = Color(0xFF9B72FF)
+private val GreenPrimary = Color(0xFF34C759)
+private val GreenDark = Color(0xFF248A3D)
+private val TextPrimary = Color(0xFFFFFFFF)
+private val TextSecondary = Color(0xFF8E8E93)
+private val AccentBlue = Color(0xFF5E5CE6)
+private val AccentGreen = Color(0xFF34C759)
+
 @Composable
 fun MainScreen(
     recordingState: RecordingState,
@@ -32,541 +48,828 @@ fun MainScreen(
     onStopRecordingAndMusic: (Context) -> Unit,
     onNavigateToStageConfig: () -> Unit,
     onNavigateToProfileSelection: () -> Unit,
+    onNavigateToQuestionnaire: () -> Unit,
     onDismissReminder: () -> Unit,
     onToggleML: () -> Unit
 ) {
-    val context = LocalContext.current
     val scrollState = rememberScrollState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(DarkBackground)
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Title
-        Text(
-            text = "🎵 Watch-Controlled Music",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+            // App Header Card
+            AppHeaderCard()
 
-        // === PROFILE SELECTION SECTION ===
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFF3E5F5)
+            SleepQuestionnaireCard(onClick = onNavigateToQuestionnaire)
+            // Music Profile Card
+            MusicProfileCard(
+                profileName = currentProfileName,
+                onClick = onNavigateToProfileSelection
             )
+
+            // Profile Freshness Tracker
+            ProfileFreshnessCard(
+                daysSinceLastChange = reminderState.daysSinceLastChange,
+                daysUntilReminder = reminderState.daysUntilReminder,
+                shouldShowReminder = reminderState.shouldShowReminder,
+                onDismiss = onDismissReminder
+            )
+
+            // Current Stage Display
+            CurrentStageCard(
+                stageState = stageState,
+                onNavigateToConfig = onNavigateToStageConfig
+            )
+
+            // AI Stage Control
+            AIStageControlCard(
+                isEnabled = stageState.isMLEnabled,
+                onToggle = onToggleML
+            )
+
+            // Recording Control
+            RecordingControlCard(
+                isRecording = recordingState.isRecording,
+                onStart = { onStartRecordingAndMusic(context) },
+                onStop = { onStopRecordingAndMusic(context) }
+            )
+
+            // How to Use
+            HowToUseCard()
+
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+    }
+}
+
+@Composable
+fun AppHeaderCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(PurpleStart, PurpleEnd)
+                    )
+                )
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.MusicNote,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                Text(
+                    "HypnoTune",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    "Smart Sleep Music Therapy",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MusicProfileCard(
+    profileName: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = CardBackground
+        ),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onNavigateToProfileSelection)
-                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(AccentBlue.copy(alpha = 0.2f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.LibraryMusic,
+                        contentDescription = null,
+                        tint = AccentBlue,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        "Music Profile",
+                        fontSize = 14.sp,
+                        color = TextSecondary,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        profileName,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary
+                    )
+                }
+            }
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = TextSecondary,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfileFreshnessCard(
+    daysSinceLastChange: Int,
+    daysUntilReminder: Int,
+    shouldShowReminder: Boolean,
+    onDismiss: () -> Unit
+) {
+    var showInfoDialog by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (shouldShowReminder) Color(0xFF3A2D2B) else Color(0xFF2D4A2B)
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "🎼 Music Profile",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = currentProfileName,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFF6A1B9A),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = "Select Profile",
-                    tint = Color(0xFF6A1B9A)
-                )
-            }
-        }
-
-        // === REMINDER BANNER ===
-        if (reminderState.shouldShowReminder) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFE082)
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "⚠️ CHANGE PROFILE TO AVOID EARWORM",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = Color(0xFFE65100),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "It's been ${reminderState.daysSinceLastChange} days since you changed profiles!",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF6D4C41)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                if (shouldShowReminder) Color(0xFFFF9500).copy(alpha = 0.3f)
+                                else GreenPrimary.copy(alpha = 0.3f),
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            if (shouldShowReminder) Icons.Default.Warning else Icons.Default.Celebration,
+                            contentDescription = null,
+                            tint = if (shouldShowReminder) Color(0xFFFF9500) else GreenPrimary,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-                    IconButton(onClick = onDismissReminder) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "Profile Freshness",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Info Icon Button
+                    IconButton(
+                        onClick = { showInfoDialog = true },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "Info",
+                            tint = AccentBlue.copy(alpha = 0.7f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                if (shouldShowReminder) {
+                    IconButton(onClick = onDismiss) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Dismiss",
-                            tint = Color(0xFFE65100)
+                            tint = TextSecondary,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
-        } else {
-            // Show progress towards next reminder
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFE8F5E9)
-                )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                if (shouldShowReminder) "Time to change your profile!"
+                else "$daysUntilReminder days until reminder",
+                fontSize = 14.sp,
+                color = if (shouldShowReminder) Color(0xFFFF9500) else GreenPrimary,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                "Day $daysSinceLastChange of 21",
+                fontSize = 12.sp,
+                color = TextSecondary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Progress bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(
+                        if (shouldShowReminder) Color(0xFF3A2A1A) else Color(0xFF1A3A1A)
+                    )
             ) {
-                Column(
-                    modifier = Modifier.padding(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "📅 Profile Freshness",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF2E7D32),
-                            fontWeight = FontWeight.Bold
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(
+                            fraction = if (daysSinceLastChange > 0) daysSinceLastChange / 21f else 0f
                         )
-                        Text(
-                            text = "${reminderState.daysUntilReminder} days until reminder",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF2E7D32)
+                        .fillMaxHeight()
+                        .background(
+                            if (shouldShowReminder) Color(0xFFFF9500) else GreenPrimary
                         )
-                    }
-                    LinearProgressIndicator(
-                        progress = 1f - (reminderState.daysUntilReminder / 21f),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        color = Color(0xFF4CAF50),
-                        trackColor = Color(0xFFC8E6C9)
-                    )
-                    Text(
-                        text = "Day ${reminderState.daysSinceLastChange} of 21",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF558B2F),
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+                )
             }
         }
+    }
 
-        // === LIVE WATCH DATA & ML PREDICTION CARD ===
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = if (liveDataState.isReceivingData)
-                    Color(0xFFE8F5E9) else Color(0xFFFFF3E0)
+    // Info Dialog
+    if (showInfoDialog) {
+        EarwormInfoDialog(onDismiss = { showInfoDialog = false })
+    }
+}
+
+@Composable
+fun EarwormInfoDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CardBackground,
+        shape = RoundedCornerShape(24.dp),
+        icon = {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(AccentBlue.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.MusicNote,
+                    contentDescription = null,
+                    tint = AccentBlue,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        },
+        title = {
+            Text(
+                "About Profile Freshness",
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
             )
-        ) {
+        },
+        text = {
             Column(
-                modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (liveDataState.isReceivingData) "📊 Live Watch Data" else "📊 Waiting for Watch...",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                Text(
+                    "What is the Earworm Phenomenon?",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AccentBlue
+                )
+                Text(
+                    "An 'earworm' is when a song gets stuck in your head. Listening to the same music for 21+ days can trigger this.",
+                    fontSize = 14.sp,
+                    color = TextPrimary,
+                    lineHeight = 20.sp
+                )
 
-                    // Connection status indicator
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .padding(2.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            // Blinking dot
-                            if (liveDataState.isReceivingData && !liveDataState.isDataStale()) {
-                                Surface(
-                                    shape = MaterialTheme.shapes.small,
-                                    color = Color(0xFF4CAF50),
-                                    modifier = Modifier.size(8.dp)
-                                ) {}
-                            } else {
-                                Surface(
-                                    shape = MaterialTheme.shapes.small,
-                                    color = Color(0xFFFF9800),
-                                    modifier = Modifier.size(8.dp)
-                                ) {}
-                            }
-                        }
-                        Text(
-                            text = if (liveDataState.isDataStale()) "Stale" else "Live",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (liveDataState.isDataStale()) Color(0xFFFF9800) else Color(0xFF4CAF50)
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(4.dp))
 
-                HorizontalDivider()
+                Text(
+                    "Why 21 Days?",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AccentBlue
+                )
+                Text(
+                    "Research shows repetitive exposure for 3 weeks can cause the brain to 'lock in' melodies.",
+                    fontSize = 14.sp,
+                    color = TextPrimary,
+                    lineHeight = 20.sp
+                )
 
-                // Sensor data section
-                if (liveDataState.trackedData != null) {
-                    val data = liveDataState.trackedData
+                Spacer(modifier = Modifier.height(4.dp))
 
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(
-                            text = "Sensor Readings",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("❤️ Heart Rate:", style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                if (data.hr > 0) "${data.hr} bpm" else "N/A",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFD32F2F)
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("📱 Accel X:", style = MaterialTheme.typography.bodySmall)
-                            Text("${"%.3f".format(data.accelX)} m/s²", style = MaterialTheme.typography.bodySmall)
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("📱 Accel Y:", style = MaterialTheme.typography.bodySmall)
-                            Text("${"%.3f".format(data.accelY)} m/s²", style = MaterialTheme.typography.bodySmall)
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("📱 Accel Z:", style = MaterialTheme.typography.bodySmall)
-                            Text("${"%.3f".format(data.accelZ)} m/s²", style = MaterialTheme.typography.bodySmall)
-                        }
-
-                        if (data.ibi.isNotEmpty()) {
-                            Text(
-                                "💓 IBI: ${data.ibi.take(5).joinToString(", ")}${if (data.ibi.size > 5) "..." else ""} ms",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    HorizontalDivider()
-
-                    // ML Prediction section
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(
-                            text = "🤖 ML Prediction",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Stage ${liveDataState.predictedStage}",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1976D2)
-                                )
-                                Text(
-                                    text = "Confidence: ${(liveDataState.confidence * 100).toInt()}%",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = if (liveDataState.confidence >= 0.5f) Color(0xFF388E3C) else Color(0xFFFF9800)
-                                )
-                            }
-
-                            // Volume indicator - show a placeholder for now
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = "🎵 Music",
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                                Text(
-                                    text = if (recordingState.isRecording) "Playing" else "Stopped",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1976D2)
-                                )
-                            }
-                        }
-
-                        // Confidence bar
-                        LinearProgressIndicator(
-                            progress = liveDataState.confidence,
-                            modifier = Modifier.fillMaxWidth(),
-                            color = if (liveDataState.confidence >= 0.5f) Color(0xFF4CAF50) else Color(0xFFFF9800),
-                            trackColor = Color(0xFFE0E0E0)
-                        )
-                    }
-
-                    // Last update timestamp
-                    Text(
-                        text = "⏱️ Updated ${liveDataState.getSecondsSinceUpdate()}s ago",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                } else {
-                    // No data yet
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Watch,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = Color(0xFFBDBDBD)
-                        )
-                        Text(
-                            text = "Waiting for watch data...",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color(0xFF757575)
-                        )
-                        Text(
-                            text = "Make sure your Galaxy Watch is connected",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF9E9E9E)
-                        )
-                    }
-                }
+                Text(
+                    "Solution",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AccentGreen
+                )
+                Text(
+                    "Change your profile every 21 days to keep your listening fresh!",
+                    fontSize = 14.sp,
+                    color = TextPrimary,
+                    lineHeight = 20.sp
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AccentBlue
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Got it!", fontWeight = FontWeight.SemiBold)
             }
         }
+    )
+}
 
-        // === STAGE STATUS SECTION ===
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFE1F5FE)
-            )
+@Composable
+fun CurrentStageCard(
+    stageState: StageState,
+    onNavigateToConfig: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = CardBackground
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(AccentBlue.copy(alpha = 0.2f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Tune,
+                            contentDescription = null,
+                            tint = AccentBlue,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
                     Column {
                         Text(
-                            text = "🎚️ Stage Configuration",
-                            style = MaterialTheme.typography.titleMedium
+                            "Current Stage",
+                            fontSize = 13.sp,
+                            color = TextSecondary,
+                            fontWeight = FontWeight.Medium
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "${stageState.stages.size} stages configured",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    IconButton(onClick = onNavigateToStageConfig) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Configure Stages",
-                            tint = Color(0xFF0277BD)
+                            stageState.stages.getOrNull(stageState.currentStage)?.stageName ?: "Rest",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TextPrimary
                         )
                     }
                 }
 
-                HorizontalDivider()
-
-                // ML Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                IconButton(
+                    onClick = onNavigateToConfig,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(AccentBlue.copy(alpha = 0.15f), CircleShape)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "ML-Based Stage Control",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = if (stageState.isMLEnabled)
-                                "Music adapts to your activity"
-                            else
-                                "Stage changes disabled",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Switch(
-                        checked = stageState.isMLEnabled,
-                        onCheckedChange = { onToggleML() }
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = AccentBlue,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Volume", fontSize = 12.sp, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "${stageState.stages.getOrNull(stageState.currentStage)?.targetVolume ?: 30}%",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(40.dp)
+                        .background(TextSecondary.copy(alpha = 0.2f))
+                )
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Type", fontSize = 12.sp, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        stageState.stages.getOrNull(stageState.currentStage)?.musicType ?: "Ambient",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
                     )
                 }
             }
         }
+    }
+}
 
-        // === MAIN CONTROL SECTION (START/STOP) ===
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = if (recordingState.isRecording)
-                    Color(0xFFFFEBEE) else Color(0xFFE8F5E9)
-            )
+@Composable
+fun AIStageControlCard(
+    isEnabled: Boolean,
+    onToggle: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = CardBackground
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(
+                            if (isEnabled) GreenPrimary.copy(alpha = 0.2f)
+                            else TextSecondary.copy(alpha = 0.1f),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Psychology,
+                        contentDescription = null,
+                        tint = if (isEnabled) GreenPrimary else TextSecondary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        "AI Stage Control",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        if (isEnabled) "Active & Learning" else "Inactive",
+                        fontSize = 13.sp,
+                        color = if (isEnabled) GreenPrimary else TextSecondary
+                    )
+                }
+            }
+
+            Switch(
+                checked = isEnabled,
+                onCheckedChange = { onToggle() },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = AccentBlue,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = TextSecondary.copy(alpha = 0.3f)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun RecordingControlCard(
+    isRecording: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = CardBackground
+        ),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            Text(
+                if (isRecording) "System Active" else "Ready to Record",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isRecording) {
+                            Brush.radialGradient(
+                                colors = listOf(Color(0xFF5E5CE6), Color(0xFF4A48D4))
+                            )
+                        } else {
+                            Brush.radialGradient(
+                                colors = listOf(GreenPrimary, GreenDark)
+                            )
+                        }
+                    )
+                    .clickable { if (isRecording) onStop() else onStart() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    if (isRecording) Icons.Default.Stop else Icons.Default.FiberManualRecord,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(56.dp)
+                )
+            }
+
+            Button(
+                onClick = { if (isRecording) onStop() else onStart() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isRecording) AccentBlue else GreenPrimary
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(
+                    if (isRecording) Icons.Default.Stop else Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    if (isRecording) "Stop" else "Start",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HowToUseCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF2D2A3A)
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(AccentBlue.copy(alpha = 0.2f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.HelpOutline,
+                        contentDescription = null,
+                        tint = AccentBlue,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    "How to Use:",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+            }
+
+            HowToStep("1", Icons.Default.LibraryMusic, "Select a music profile")
+            HowToStep("2", Icons.Default.Tune, "Configure stages & music files")
+            HowToStep("3", Icons.Default.Watch, "Connect your Galaxy Watch")
+            HowToStep("4", Icons.Default.PlayArrow, "Start recording & enjoy!")
+        }
+    }
+}
+
+@Composable
+fun HowToStep(
+    number: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(AccentBlue.copy(alpha = 0.2f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                number,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = AccentBlue
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = TextSecondary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text,
+            fontSize = 14.sp,
+            color = TextPrimary
+        )
+    }
+}
+@Composable
+fun SleepQuestionnaireCard(
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFF6B4CE6).copy(alpha = 0.3f),
+                            Color(0xFF9B72FF).copy(alpha = 0.3f)
+                        )
+                    )
+                )
+                .padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
-                    if (recordingState.isRecording) {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color(0xFF5E5CE6).copy(alpha = 0.3f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
-                            Icons.Default.FiberManualRecord,
+                            Icons.Default.Quiz,
                             contentDescription = null,
-                            tint = Color.Red,
-                            modifier = Modifier.size(16.dp)
+                            tint = Color(0xFF5E5CE6),
+                            modifier = Modifier.size(28.dp)
                         )
                     }
-                    Text(
-                        text = if (recordingState.isRecording) "🔴 System Active" else "⚪ System Inactive",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                if (recordingState.isRecording) {
-                    Text(
-                        text = "Recording data & playing adaptive music",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    recordingState.fileName?.let { fileName ->
-                        Text(
-                            text = "📄 $fileName",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF1976D2)
-                        )
-                    }
-                }
-
-                // Single start/stop button
-                Button(
-                    onClick = {
-                        if (recordingState.isRecording) {
-                            onStopRecordingAndMusic(context)
-                        } else {
-                            onStartRecordingAndMusic(context)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Find Your Perfect Music",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFFFFFF)
+                            )
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (recordingState.isRecording)
-                            Color(0xFFF44336)
-                        else
-                            Color(0xFF4CAF50)
-                    )
-                ) {
-                    Icon(
-                        if (recordingState.isRecording) Icons.Default.Stop else Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = if (recordingState.isRecording)
-                            "STOP Recording & Music"
-                        else
-                            "START Recording & Music",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "Take a quick questionnaire",
+                            fontSize = 13.sp,
+                            color = Color(0xFF8E8E93)
+                        )
+                    }
                 }
-
-                // Status message
-                recordingState.message?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (message.contains("Failed")) Color.Red else Color(0xFF388E3C)
-                    )
-                }
-            }
-        }
-
-        // === INSTRUCTIONS ===
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFFFF9C4)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = "📖 How to Use:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("1. 🎼 Select a music profile (tap profile card)")
-                Text("2. ⚙️ Configure stages and add music files")
-                Text("3. 🔛 Enable ML-Based Stage Control")
-                Text("4. ⏺️ Press START to activate the system")
-                Text("5. 🎵 Music plays and adapts to your activity")
-                Text("6. 📊 Watch live data and ML predictions")
-                Text("7. 🛑 Press STOP when done")
-                Text("8. 💾 Your data is saved and shareable")
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "💡 The system automatically records data and adjusts music based on your heart rate and movement.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF6D4C41),
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    tint = Color(0xFF5E5CE6),
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

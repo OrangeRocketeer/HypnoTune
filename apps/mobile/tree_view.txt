@@ -31,7 +31,9 @@ C:\PROJECTS\MOBILE\SRC
     |                   |           CreateProfileDialog.kt
     |                   |           ListView.kt
     |                   |           MainScreen.kt
+    |                   |           MusicRecommendationResultScreen.kt
     |                   |           ProfileSelectionScreen.kt
+    |                   |           SleepMusicQuestionnaireScreen.kt
     |                   |           StageConfigScreen.kt
     |                   |           
     |                   +---receiver

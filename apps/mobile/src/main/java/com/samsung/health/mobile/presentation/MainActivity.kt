@@ -29,6 +29,9 @@ import com.samsung.health.mobile.presentation.ui.StageConfigScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.samsung.health.mobile.presentation.ui.SleepMusicQuestionnaireScreen
+import com.samsung.health.mobile.presentation.ui.MusicRecommendationResultScreen
+import com.samsung.health.mobile.presentation.ui.QuestionnaireAnswers
 
 private const val TAG = "MainActivity"
 
@@ -89,6 +92,9 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(intent.getBooleanExtra("open_profile_selection", false))
             }
             var showCreateProfile by remember { mutableStateOf(false) }
+            var showQuestionnaire by remember { mutableStateOf(false) }
+            var showQuestionnaireResults by remember { mutableStateOf(false) }
+            var questionnaireAnswers by remember { mutableStateOf<QuestionnaireAnswers?>(null) }
 
             MaterialTheme {
                 val recordingState by viewModel.recordingState.collectAsState()
@@ -135,6 +141,38 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+                    showQuestionnaire -> {
+                        SleepMusicQuestionnaireScreen(
+                            onNavigateToResults = { answers ->
+                                questionnaireAnswers = answers
+                                showQuestionnaire = false
+                                showQuestionnaireResults = true
+                            },
+                            onBack = {
+                                showQuestionnaire = false
+                            }
+                        )
+                    }
+                    showQuestionnaireResults -> {
+                        questionnaireAnswers?.let { answers ->
+                            MusicRecommendationResultScreen(
+                                answers = answers,
+                                onStartListening = {
+                                    // Go back to main screen
+                                    showQuestionnaireResults = false
+                                    questionnaireAnswers = null
+                                },
+                                onRetakeQuestionnaire = {
+                                    showQuestionnaireResults = false
+                                    showQuestionnaire = true
+                                },
+                                onBack = {
+                                    showQuestionnaireResults = false
+                                    questionnaireAnswers = null
+                                }
+                            )
+                        }
+                    }
                     else -> {
                         MainScreen(
                             recordingState = recordingState,
@@ -149,6 +187,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToProfileSelection = {
                                 showProfileSelection = true
+                            },
+                            onNavigateToQuestionnaire = {
+                                showQuestionnaire = true
                             },
                             onDismissReminder = {
                                 viewModel.dismissReminder()

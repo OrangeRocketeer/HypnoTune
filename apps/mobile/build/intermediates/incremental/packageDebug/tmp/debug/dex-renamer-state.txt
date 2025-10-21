@@ -1,15 +1,15 @@
-#Sun Oct 12 18:57:47 IST 2025
-base.0=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
-base.1=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\1\\classes.dex
-base.10=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes3.dex
-base.2=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
-base.3=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\10\\classes.dex
-base.4=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
-base.5=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\2\\classes.dex
-base.6=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\7\\classes.dex
-base.7=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\8\\classes.dex
-base.8=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\9\\classes.dex
-base.9=C\:\\sd_app\\latest_proj_no_bug\\proj\\mobile\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
+#Tue Oct 21 20:40:40 IST 2025
+base.0=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
+base.1=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\1\\classes.dex
+base.10=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes3.dex
+base.2=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
+base.3=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\10\\classes.dex
+base.4=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
+base.5=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\2\\classes.dex
+base.6=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\7\\classes.dex
+base.7=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\8\\classes.dex
+base.8=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\9\\classes.dex
+base.9=C\:\\Users\\aryan\\StudioProjects\\HypnoTune\\apps\\mobile\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
 path.0=classes.dex
 path.1=1/classes.dex
 path.10=classes3.dex
