@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="PERMISSION_ERROR">No required permissions</string>
+    <string name="SDK_POLICY_ERROR">Policy error, enable Developer Mode</string>
+    <string name="app_name">HRDataTransfer</string>
+    <string name="error_initial_state">Initial HR state</string>
+    <string name="error_low_ppg_signal">Low PPG signal, try not to move</string>
+    <string name="error_low_ppg_signal_even_more">Low PPG signal, try not to move</string>
+    <string name="error_other_sensor_running">Higher priority sensor is running</string>
+    <string name="error_wearable_detached">Detached watch detected</string>
+    <string name="error_wearable_movement_detected">Wearable movement detected. Please stay still</string>
+    <string name="hts_connected">Connected to Health Tracking Service</string>
+    <string name="permission_permanently_denied">Body sensor not available.\nYou did not grant the required permission.</string>
+    <string name="permission_should_show_rationale">In order to use the app you need to grant Body Sensor permission in App\'s settings</string>
+    <string name="send_button">SEND</string>
+    <string name="sending_failed">No remote nodes around to send to</string>
+    <string name="sending_success">The data has been sent</string>
+    <string name="start_button">START</string>
+    <string name="stop_button">STOP</string>
+    <string name="warming_up">Warming up…</string>
+</resources>

@@ -1,0 +1,21 @@
+R_DEF: Internal format may change without notice
+local
+mipmap ic_launcher
+string PERMISSION_ERROR
+string SDK_POLICY_ERROR
+string app_name
+string error_initial_state
+string error_low_ppg_signal
+string error_low_ppg_signal_even_more
+string error_other_sensor_running
+string error_wearable_detached
+string error_wearable_movement_detected
+string hts_connected
+string permission_permanently_denied
+string permission_should_show_rationale
+string send_button
+string sending_failed
+string sending_success
+string start_button
+string stop_button
+string warming_up

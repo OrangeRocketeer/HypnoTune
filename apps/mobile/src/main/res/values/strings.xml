@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">HRDataTransfer</string>
+    <string name="ibi_name">IBI</string>
+    <string name="ibi_unit">ms</string>
+    <string name="hr_name">HR</string>
+    <string name="hr_unit">bpm</string>
+</resources>

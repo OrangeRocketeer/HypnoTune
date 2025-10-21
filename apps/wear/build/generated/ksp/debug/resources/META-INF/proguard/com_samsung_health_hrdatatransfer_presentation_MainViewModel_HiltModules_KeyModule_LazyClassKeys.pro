@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class com.samsung.health.hrdatatransfer.presentation.MainViewModel
